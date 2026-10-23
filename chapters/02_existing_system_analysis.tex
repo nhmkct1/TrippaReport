@@ -1,0 +1,218 @@
+% Source: Confluence page 12025865, version 9.
+\chapter{Existing System Analysis}
+\label{ch:existing_system_analysis}
+\noindent\textit{Source note: External citations supporting this comparison remain to be confirmed. The marker ``source TBD'' preserves unresolved reference locations from the source document.}\par\medskip
+Several existing applications provide functions related to itinerary generation, place discovery, route planning, travel-time estimation, budgeting, and AI-assisted travel planning. However, these systems are designed around different travel scenarios. The following systems were selected because each overlaps with an important part of Trippa while representing a different approach to travel planning.
+
+
+\section{Wanderlog}
+
+\subsection{Overview}
+
+Wanderlog is a general-purpose travel-planning application designed to organize a large portion of a trip within one system. It supports itinerary creation, route optimization, reservations, accommodation, flight information, budgeting, collaboration, maps, and AI-assisted planning. Its route optimization feature can automatically rearrange the places scheduled within a day to reduce travel time. 
+
+
+\subsection{Strengths}
+
+\begin{itemize}
+\item \textbf{Comprehensive trip organization:} Wanderlog combines itinerary planning with accommodation, reservations, budgeting, flights, and other travel information. This is particularly useful for longer trips where many different types of information need to be managed together.
+\item \textbf{Persistent itinerary management:} A trip is maintained as an itinerary that can be prepared in advance and modified over time. This makes Wanderlog suitable for users who gradually organize a vacation rather than create a plan immediately before travelling.
+\item \textbf{Route optimization within a day:} Wanderlog can automatically rearrange the places assigned to a day in order to reduce travel time and unnecessary movement.
+\end{itemize}
+
+
+\subsection{Weaknesses}
+
+\begin{itemize}
+\item \textbf{Broad scope for short outings:} The extensive set of functions is valuable for vacations but is not always necessary when the user only wants to plan several hours of activities. Accommodation, flights, reservations, packing information, and other travel-management functions add little value to a short date or local outing.
+\item \textbf{Planning still revolves around a larger trip structure:} Wanderlog is effective at organizing a trip that the user intends to take, but Trippa targets a more immediate problem in which the user may only know the available time, approximate budget, location, and desired type of activity.
+\item \textbf{Limited emphasis on recovery during an active outing:} Wanderlog provides itinerary editing and route optimization, but its public feature set places more emphasis on planning and organizing the itinerary than on tracking actual activity completion and repairing the remaining schedule after delays or other deviations.
+\end{itemize}
+
+
+\section{Tripomatic}
+
+\subsection{Overview}
+
+Tripomatic is the existing system that most closely resembles the proposed Trippa system. It supports AI-assisted itinerary generation, day-by-day planning, place discovery, route calculation, multiple transportation modes, cost estimation, and map-based itinerary editing. Its AI assistant can create a complete trip or a single day and can add, remove, reorder, and reschedule activities. 
+
+
+\subsection{Strengths}
+
+\begin{itemize}
+\item \textbf{Strong automatic itinerary generation:} Tripomatic can create complete itineraries using AI rather than requiring the user to manually select every activity. This directly addresses one of the major problems also targeted by Trippa.
+\item \textbf{Strong integration between schedule and route:} Tripomatic calculates travel between consecutive activities and updates the daily schedule when transportation or routing changes. This makes it easier to identify schedules that are geographically inefficient or too busy.
+\item \textbf{Support for realistic travel planning:} Multiple transportation modes, traffic-aware driving times, opening-hour information, and cost estimation allow the user to construct a plan that is more realistic than a simple list of recommended places.
+\item \textbf{Flexible AI-assisted modification:} The AI assistant can modify an existing itinerary through natural-language commands, including rescheduling or replacing activities.
+\end{itemize}
+
+
+\subsection{Weaknesses}
+
+\begin{itemize}
+\item \textbf{Designed as a general tourism planner:} Tripomatic can plan a single day, but its overall product model also includes multiple travel days, accommodation, flights, tours, tickets, and broader tourism planning. The application is therefore not specifically optimized around creating a small local outing as quickly as possible.
+\item \textbf{Cost is primarily estimated from the itinerary:} Tripomatic calculates expected costs based on the activities already included in the plan. Trippa intends to emphasize the opposite direction as well: a user can provide an available amount of money first, and the system determines which activities can fit within that limit.
+\item \textbf{Less emphasis on actual trip execution:} Tripomatic provides strong itinerary editing and schedule adjustment, but its publicly documented workflow focuses primarily on modifying the planned itinerary. It does not emphasize an explicit model in which events such as arrival, completion, skipping, or staying longer are recorded and then used to evaluate the feasibility of the remaining trip.
+\item \textbf{Recovery is not the central planning model:} Tripomatic can reschedule activities when requested, but Trippa is intended to treat schedule deviation itself as part of the trip lifecycle. When the user's actual progress differs from the plan, the remaining schedule is reassessed and repaired rather than simply edited manually.
+\end{itemize}
+
+
+\section{Roadtrippers}
+
+\subsection{Overview}
+
+Roadtrippers is primarily designed for road trips. Its planning process commonly begins with a starting point and destination, after which the system helps users create a route and discover suitable places along the journey. Its Autopilot feature can generate recommendations based on the route, travelers, vehicle, interests, and budget. 
+
+
+\subsection{Strengths}
+
+\begin{itemize}
+\item \textbf{Strong route-oriented planning:} Roadtrippers is specifically designed around the relationship between a journey and the places available along that journey. It is therefore effective when users already know where they are travelling but need assistance deciding where to stop.
+\item \textbf{Discovery based on the existing route:} Instead of showing places independently, Roadtrippers can recommend attractions and stops that are practical additions to the current route. This reduces unnecessary detours during long-distance travel.
+\item \textbf{AI planning uses travel-specific constraints:} Autopilot can consider information such as the destination, dates, vehicle, travelers, interests, and spending preferences when constructing recommendations.
+\end{itemize}
+
+
+\subsection{Weaknesses}
+
+\begin{itemize}
+\item \textbf{Route and destination are central to the planning process:} Roadtrippers is most suitable when the user already has a journey in mind. For a short outing, the user may not know the destination at all and may instead only know how much time and money are available.
+\item \textbf{Focused on long-distance vehicle travel:} Its strengths are most valuable for road trips, scenic drives, and journeys containing multiple stops. This is different from a local outing in which the complete plan may contain only two or three activities within several hours.
+\item \textbf{The route is the main constraint rather than the available period:} Roadtrippers primarily helps determine what can be visited along a journey. Trippa instead needs to determine what can realistically be completed within a user's available time, location, budget, and preferences.
+\end{itemize}
+
+
+\section{Google Maps}
+
+\subsection{Overview}
+
+Google Maps is primarily a mapping, place-discovery, routing, and navigation platform. Users can search for places, inspect information about them, save locations, create lists, obtain directions, and create multi-stop routes. Google Maps also provides AI-powered features that can use location, user activity, and interests to generate more personalized responses. 
+
+
+\subsection{Strengths}
+
+\begin{itemize}
+\item \textbf{Strong place and route information:} Google Maps provides the geographic information necessary for real-world planning, including locations, routes, transportation options, and directions.
+\item \textbf{Effective for individual destination decisions:} A user can quickly evaluate a restaurant, café, attraction, or other place and determine how to reach it.
+\item \textbf{Strong navigation capability:} Once destinations are selected, Google Maps is highly effective at calculating and presenting routes between them. Multi-stop directions can also be created for several selected destinations
+\item \textbf{Increasingly capable AI-based discovery:} AI-powered Maps features can provide personalized place-related responses using location and user interests, reducing some of the effort required to search manually.
+\end{itemize}
+
+
+\subsection{Weaknesses}
+
+\begin{itemize}
+\item \textbf{The user still performs the higher-level planning:} Google Maps can help select individual places and calculate routes, but the user is generally responsible for deciding which combination of places forms a suitable complete outing.
+\item \textbf{Multi-stop routing assumes destinations have already been selected:} The system can calculate how to travel through several places, but this is different from determining which activities should be selected according to the user's overall time, budget, and preferences.
+\item \textbf{Saved locations are not equivalent to an executable trip plan:} Lists are useful for storing places, but they do not represent the same concept as an itinerary with planned start times, activity durations, budget constraints, progress, and an active trip state.
+\item \textbf{Limited recovery of the complete remaining outing:} Navigation can recalculate a route when movement changes, but this does not necessarily determine whether the remaining activities are still possible or which activities should be replaced when the overall schedule becomes infeasible.
+\end{itemize}
+
+
+\begin{landscape}
+\section{Comparison of Existing Systems}
+
+The comparison shows that the selected systems address different aspects of travel planning. Wanderlog focuses on comprehensive trip organization, Tripomatic provides sophisticated itinerary planning, Roadtrippers focuses on journeys and stops along a route, while Google Maps provides strong location and navigation capabilities.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.20\linewidth-1.60\tabcolsep\relax}P{\dimexpr 0.20\linewidth-1.60\tabcolsep\relax}P{\dimexpr 0.20\linewidth-1.60\tabcolsep\relax}P{\dimexpr 0.20\linewidth-1.60\tabcolsep\relax}P{\dimexpr 0.20\linewidth-1.60\tabcolsep\relax}@{}}
+\caption{Comparison of Existing Systems}\label{tab:2-1}\\
+\toprule
+\textbf{Criterion} & \textbf{Wanderlog} & \textbf{Tripomatic} & \textbf{Roadtrippers} & \textbf{Google Maps} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{Criterion} & \textbf{Wanderlog} & \textbf{Tripomatic} & \textbf{Roadtrippers} & \textbf{Google Maps} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Primary focus & General trip management & Tourism itinerary planning & Road-trip planning & Place discovery and navigation \\ \addlinespace[2pt]
+Suitable for short outings & Possible, but not primary focus & Yes & Limited & Requires manual planning \\ \addlinespace[2pt]
+AI-assisted planning & Yes & Yes & Yes & AI-assisted discovery \\ \addlinespace[2pt]
+Automatic itinerary generation & Yes & Yes & Yes, route-oriented & Not the primary workflow \\ \addlinespace[2pt]
+Time-aware scheduling & Yes & Strong & Route-oriented & Mainly travel-time calculation \\ \addlinespace[2pt]
+Budget considered & Yes & Cost estimation & Budget preferences & Limited as an itinerary constraint \\ \addlinespace[2pt]
+Destination may be unknown & Partially & Partially & Usually route-oriented & Place discovery available \\ \addlinespace[2pt]
+Persistent itinerary & Yes & Yes & Yes & Saved places/routes rather than full itinerary \\ \addlinespace[2pt]
+Active trip progress model & Limited emphasis & Limited emphasis & Route/navigation oriented & Navigation oriented \\ \addlinespace[2pt]
+Recovery after schedule deviation & Limited emphasis & Plan can be modified & Route adjustment & Route recalculation \\ \addlinespace[2pt]
+Strong multi-day support & Yes & Yes & Yes & Not the main purpose \\ \addlinespace[2pt]
+Navigation & Secondary & Secondary & Strong & Strong \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+\end{landscape}
+
+
+\section{Proposed System: Trippa}
+
+\subsection{System Focus}
+
+Trippa is proposed as a short-trip-first planning system. Its purpose is not to combine every function provided by existing travel applications. Instead, the system focuses on precise planning for outings that normally take place within several hours or within a single day.
+
+
+Typical use cases include a short date, meeting friends after work or study, a food-oriented outing, local exploration, or a spontaneous free afternoon. In these situations, the user may not have enough time or motivation to perform extensive research and manually organize several destinations.
+
+
+The initial Trippa workflow is therefore designed around a relatively small amount of information: available start and end time, start and end location, transportation, budget, preferences, and any places that the user specifically wants to include. The system then generates a feasible itinerary while considering travel time, visit duration, opening hours, expected cost, and user priorities. \sourcetbd{}
+
+
+Trippa should not be considered a travel super application. It is not intended to replace Wanderlog for complete vacation management, Roadtrippers for long-distance road travel, Tripomatic for broad multi-day tourism planning, or Google Maps for navigation. Attempting to reproduce all of these capabilities would increase system complexity without directly improving the problem that Trippa is intended to solve.
+
+
+The focus is instead narrower: to produce a realistic and usable plan for the time that the user currently has available.
+
+
+\subsection{Strengths}
+
+\begin{itemize}
+\item \textbf{Short-trip-first planning:} Trippa is designed primarily around outings that occur within a day. The planning process can therefore remain simple and avoid requiring information that is mainly relevant to multi-day travel, such as accommodation or flights.
+\item \textbf{Low planning effort:} The system can use natural-language input, saved preferences, and default values to reduce the number of decisions the user must make before a plan can be generated.
+\item \textbf{Time as a primary constraint:} Available time is not only displayed after the plan is generated. The itinerary must fit within the user's specified trip window, including expected visit durations and travel between activities.
+\item \textbf{Budget as a planning constraint:} The user's available budget can influence which activities are selected. This is particularly relevant for short dates and local outings where the user may begin with a question such as what can realistically be done within several hours and a fixed amount of money.
+\item \textbf{Preference-aware planning:} Reusable preferences can reduce repeated input for returning users. Transportation preferences, typical spending, activity interests, pacing, and similar information can be used as defaults while still allowing each individual trip to override them.
+\item \textbf{Destination does not need to be predetermined:} The user may start with time, location, budget, and desired experience rather than a specific destination. The system can therefore help determine where the user should go, rather than only calculating how to travel through already selected locations.
+\item \textbf{Explicit feasibility checking:} A successful Trippa itinerary is required to satisfy the trip window, known opening hours, duration rules, required-place policy, and budget policy. AI-generated suggestions do not become authoritative without verification. \sourcetbd{}
+\item \textbf{Persistent trip lifecycle:} A plan can remain available as a Ready, Ongoing, or Completed trip instead of existing only as a temporary route or collection of places.
+\item \textbf{Execution-aware planning:} During an ongoing trip, the system can record situations such as arrival, completion, skipping an activity, staying longer than planned, or ending the trip early. These events can affect the feasibility of the remaining schedule. \sourcetbd{}
+\item \textbf{Recovery of the remaining plan:} If reality differs from the original itinerary, the system can recalculate only the affected remaining activities. Completed activities remain unchanged. This allows the trip to continue without requiring the user to manually reconstruct the rest of the outing. \sourcetbd{}
+\end{itemize}
+
+
+\subsection{Weaknesses}
+
+\begin{itemize}
+\item \textbf{Limited scope compared with general travel platforms:} Trippa does not initially attempt to provide complete vacation-management functionality.
+\item \textbf{Limited multi-day support:} The core system is designed around a single-day planning model. Complex multi-day journeys are therefore better handled by more established tourism-planning applications in the initial version.
+\item \textbf{No accommodation, flight, booking, or payment management:} These functions are intentionally outside the core scope because they do not directly contribute to the short-trip planning problem. \sourcetbd{}
+\item \textbf{No dedicated navigation engine:} Trippa is intended to use external mapping and navigation services rather than reproduce mature navigation functionality.
+\item \textbf{Dependence on external place and route information:} The quality of planning depends partly on the availability and accuracy of information such as route duration, opening hours, and location details.
+\item \textbf{Cost information may be less precise than route information:} Exact prices are not always available for restaurants and activities. Some budget calculations may therefore rely on estimated or user-provided values.
+\item \textbf{Some active-trip changes require user interaction:} Background GPS tracking is outside the initial scope. Users may therefore need to explicitly report events such as completing an activity, skipping it, or staying longer than planned. These interactions must be designed to require minimal effort. \sourcetbd{}
+\end{itemize}
+
+
+\subsection{Position of Trippa}
+
+Trippa is not intended to solve every weakness of the compared applications. Many of their characteristics are appropriate for their own target users. Wanderlog benefits from its broad vacation-management functionality, Roadtrippers is effective because of its strong road-trip specialization, Tripomatic provides extensive tourism-planning capabilities, and Google Maps remains more suitable for general place information and navigation.
+
+
+The proposed contribution of Trippa is a narrower combination of capabilities aimed at a specific planning problem. It focuses on users who have limited time, limited money, and only a general idea of what they want to do. The system uses those constraints and preferences to construct a feasible short itinerary, keeps the plan available while it is being followed, and attempts to recover the remaining schedule when the actual outing differs from the original plan.
+
+
+The primary problem addressed by Trippa can therefore be expressed as follows:
+
+
+Given the user's current location, available time, budget, transportation, and preferences, determine a realistic plan that can be completed within the day and continue adapting that plan when the outing does not proceed as expected.
+
+
+This focused scope allows Trippa to prioritize planning precision and ease of use rather than becoming a general travel super application.
+

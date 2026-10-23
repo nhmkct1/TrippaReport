@@ -1,0 +1,1015 @@
+% Source: Confluence page 12025880, version 6.
+\chapter{System Analysis}
+\label{ch:system_analysis}
+\section{Introduction}
+
+This chapter presents the functional and non-functional requirements of Trippa, a short-trip planning system designed to help users create, manage, and execute realistic itineraries for local outings within a single day.
+
+
+As discussed in Chapter~\ref{ch:existing_system_analysis}, existing travel-planning applications provide various capabilities, including destination discovery, route optimization, itinerary management, and AI-assisted recommendations. However, Trippa focuses on a more specific problem: helping users determine what they can realistically do within a limited amount of time and budget, even when they have not selected their destinations in advance.
+
+
+Trippa supports the complete lifecycle of a short trip, from defining travel constraints and generating an itinerary to modifying the plan, tracking actual progress, and recovering from unexpected schedule deviations.
+
+
+The requirements are classified into two categories:
+
+
+\begin{itemize}
+\item Functional Requirements (FR): Describe the functions, operations, and behaviors the system must provide.
+\item Non-Functional Requirements (NFR): Describe the quality attributes and operational constraints the system must satisfy.
+\end{itemize}
+
+
+The requirements also distinguish between the core Web App, its responsive mobile interface, and optional AI-assisted capabilities. This distinction helps establish a realistic implementation scope while supporting future system extensions.
+
+
+\section{System Scope and Boundaries}
+
+\subsection{In-Scope Functionalities}
+
+The proposed system includes the following major capabilities.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.34\linewidth-0.68\tabcolsep\relax}P{\dimexpr 0.66\linewidth-1.32\tabcolsep\relax}@{}}
+\caption{In-Scope Functionalities}\label{tab:3-1}\\
+\toprule
+\textbf{Functional Area} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{Functional Area} & \textbf{Description} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+User and Account Management & User registration, authentication, profile management, and role-based access control \\ \addlinespace[2pt]
+Guest Trip Planning & Temporary itinerary creation and modification without authentication \\ \addlinespace[2pt]
+User Preferences & Persistent transportation, spending, and activity preferences \\ \addlinespace[2pt]
+Trip Request Management & Configuration of date, time, locations, budget, transportation, and desired places \\ \addlinespace[2pt]
+Place Discovery and Map Interaction & Location search, place selection, map visualization, and route information \\ \addlinespace[2pt]
+Automatic Itinerary Generation & Generation of ordered activities using trip constraints and routing information \\ \addlinespace[2pt]
+Feasibility Validation & Verification of time, budget, opening hours, travel durations, and required places \\ \addlinespace[2pt]
+Itinerary Editing & Addition, removal, and modification of scheduled activities \\ \addlinespace[2pt]
+Trip Lifecycle Management & Management of Ready, Ongoing, and Completed trips \\ \addlinespace[2pt]
+Active Trip Execution & Tracking activity completion, skipped visits, and schedule changes \\ \addlinespace[2pt]
+Dynamic Replanning & Adjustment of unfinished activities when the current schedule becomes infeasible \\ \addlinespace[2pt]
+Plans and History & Access to saved, ongoing, and completed trips \\ \addlinespace[2pt]
+Administration & User account administration and system monitoring \\ \addlinespace[2pt]
+Responsive Mobile Experience & Mobile-friendly access to the same planning and execution workflows \\ \addlinespace[2pt]
+AI-Assisted Interaction & Natural-language trip requests and itinerary modification, as an extension of the core planning system \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{Out-of-Scope Functionalities}
+
+The following capabilities are outside the initial implementation scope:
+
+
+\begin{itemize}
+\item Flight and accommodation booking.
+\item Payment processing and reservation management.
+\item Complex multi-day vacation planning.
+\item Built-in turn-by-turn navigation.
+\item Continuous background GPS tracking.
+\item Real-time collaborative itinerary editing.
+\item Autonomous booking agents.
+\item Native mobile applications with independent business logic.
+\item Offline-first trip synchronization.
+\end{itemize}
+
+
+These features may be considered in future versions but are not required to achieve the primary objectives of Trippa.
+
+
+\subsection{System Boundaries}
+
+Trippa is responsible for collecting trip requirements, generating itineraries, validating their feasibility, managing trip records, and supporting itinerary adjustments.
+
+
+External mapping and place-information providers supply geographic data, place details, and route estimates. Trippa uses this information but does not implement its own geographic database or navigation engine.
+
+
+AI services, when enabled, assist with interpreting natural-language requests and producing structured planning suggestions. The core planning system remains responsible for validating proposed changes against the applicable constraints.
+
+
+\section{Stakeholder Identification}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.23\linewidth-0.92\tabcolsep\relax}P{\dimexpr 0.29\linewidth-1.16\tabcolsep\relax}P{\dimexpr 0.48\linewidth-1.92\tabcolsep\relax}@{}}
+\caption{Stakeholder Identification}\label{tab:3-2}\\
+\toprule
+\textbf{Stakeholder} & \textbf{Description} & \textbf{Main Responsibilities or Needs} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{Stakeholder} & \textbf{Description} & \textbf{Main Responsibilities or Needs} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Guest & An unauthenticated visitor & Create, view, and temporarily modify itineraries without registering \\ \addlinespace[2pt]
+Registered User & An authenticated traveler & Save trips, manage preferences, edit itineraries, track progress, and view trip history \\ \addlinespace[2pt]
+System Administrator & An authorized platform administrator & Manage user accounts, monitor system operations, and investigate operational issues \\ \addlinespace[2pt]
+Map and Place Service Provider & An external geographic information service & Supply place information, locations, route distances, and estimated travel times \\ \addlinespace[2pt]
+AI Service Provider & An external or integrated AI processing service & Interpret natural-language requests and return structured suggestions when AI features are enabled \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+The Guest and Registered User represent different access levels rather than completely separate planning workflows. Both can use the core planning functionality, while persistent account-specific capabilities require authentication.
+
+
+\section{Functional Requirements}
+
+The functional requirements are organized into ten functional areas. Each requirement is assigned a unique identifier to support traceability during system design, implementation, and testing.
+
+
+\subsection{FR-1: User Authentication and Account Management}
+
+The system shall support guest access, authenticated user accounts, and role-based authorization.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{User Authentication and Account Management}\label{tab:3-3}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-1.1 & The system shall allow guests to access the basic trip-planning workflow without authentication. \\ \addlinespace[2pt]
+FR-1.2 & The system shall allow guests to register an account using supported registration methods. \\ \addlinespace[2pt]
+FR-1.3 & The system shall allow registered users to log in and log out. \\ \addlinespace[2pt]
+FR-1.4 & The system shall authenticate users before granting access to protected account-specific functions. \\ \addlinespace[2pt]
+FR-1.5 & The system shall allow registered users to view and update their profile information. \\ \addlinespace[2pt]
+FR-1.6 & The system shall provide an account recovery mechanism. \\ \addlinespace[2pt]
+FR-1.7 & The system shall maintain authenticated sessions according to the supported authentication mechanism. \\ \addlinespace[2pt]
+FR-1.8 & The system shall distinguish between regular users and administrators and enforce the appropriate access permissions. \\ \addlinespace[2pt]
+FR-1.9 & The system shall prevent users from accessing or modifying another user's private account information and saved trips without authorization. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{FR-2: User Preferences Management}
+
+The system shall support reusable planning preferences to reduce repetitive input when creating new trips.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{User Preferences Management}\label{tab:3-4}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-2.1 & The system shall allow registered users to configure their default transportation mode. \\ \addlinespace[2pt]
+FR-2.2 & The system shall allow registered users to configure their preferred spending range or default budget. \\ \addlinespace[2pt]
+FR-2.3 & The system shall support storing additional planning preferences, including activity interests and preferred trip pace, when enabled. \\ \addlinespace[2pt]
+FR-2.4 & The system shall persist user preferences and retrieve them in subsequent authenticated sessions. \\ \addlinespace[2pt]
+FR-2.5 & The system shall automatically apply available saved preferences when creating a new trip request. \\ \addlinespace[2pt]
+FR-2.6 & The system shall allow users to override default preferences for an individual trip without changing their saved preferences. \\ \addlinespace[2pt]
+FR-2.7 & The system shall allow registered users to update their saved preferences. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{FR-3: Trip Request Creation and Management}
+
+The system shall allow users to define, review, and modify the constraints required for itinerary generation.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{Trip Request Creation and Management}\label{tab:3-5}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-3.1 & The system shall allow guests and registered users to create a trip request. \\ \addlinespace[2pt]
+FR-3.2 & The system shall allow users to specify the trip date, starting time, and ending time. \\ \addlinespace[2pt]
+FR-3.3 & The system shall allow users to select a starting location and an optional ending location. \\ \addlinespace[2pt]
+FR-3.4 & The system shall allow users to specify whether the trip should return to its starting location. \\ \addlinespace[2pt]
+FR-3.5 & The system shall allow users to select the intended transportation mode. \\ \addlinespace[2pt]
+FR-3.6 & The system shall allow users to specify an available budget for the trip. \\ \addlinespace[2pt]
+FR-3.7 & The system shall allow users to specify preferred activities, interests, or desired experiences. \\ \addlinespace[2pt]
+FR-3.8 & The system shall allow users to select desired places and assign priorities or required-place constraints where supported. \\ \addlinespace[2pt]
+FR-3.9 & The system shall allow users to review and modify the complete trip request before generating an itinerary. \\ \addlinespace[2pt]
+FR-3.10 & The system shall validate required fields and reject invalid or inconsistent trip request data with understandable feedback. \\ \addlinespace[2pt]
+FR-3.11 & The system shall allow users to revise a trip request and regenerate the corresponding itinerary. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{FR-4: Place Discovery and Map Interaction}
+
+The system shall integrate with external geographic services to support location discovery, route visualization, and map-based itinerary interaction.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{Place Discovery and Map Interaction}\label{tab:3-6}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-4.1 & The system shall allow users to search for places and geographic locations. \\ \addlinespace[2pt]
+FR-4.2 & The system shall allow users to select search results as starting locations, ending locations, or desired places. \\ \addlinespace[2pt]
+FR-4.3 & The system shall display selected locations and scheduled activities on an interactive map. \\ \addlinespace[2pt]
+FR-4.4 & The system shall display available place information relevant to itinerary planning. \\ \addlinespace[2pt]
+FR-4.5 & The system shall retrieve route information, estimated travel durations, and distances between itinerary locations. \\ \addlinespace[2pt]
+FR-4.6 & The system shall display the planned route between consecutive activities. \\ \addlinespace[2pt]
+FR-4.7 & The system shall synchronize activity selection between the map and the itinerary summary. \\ \addlinespace[2pt]
+FR-4.8 & The system shall allow users to access supported itinerary editing actions through map or itinerary interactions. \\ \addlinespace[2pt]
+FR-4.9 & The system shall support opening selected destinations or routes in an external navigation service. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{FR-5: Automatic Itinerary Generation and Feasibility Validation}
+
+The system shall generate structured itineraries using user constraints and verify their feasibility before they are accepted.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{Automatic Itinerary Generation and Feasibility Validation}\label{tab:3-7}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-5.1 & The system shall generate an ordered candidate itinerary from a valid trip request. \\ \addlinespace[2pt]
+FR-5.2 & The system shall identify candidate places based on the user's locations, preferences, and trip constraints. \\ \addlinespace[2pt]
+FR-5.3 & The system shall estimate the duration and expected cost of each proposed activity using available information. \\ \addlinespace[2pt]
+FR-5.4 & The system shall calculate the estimated travel time between consecutive activities. \\ \addlinespace[2pt]
+FR-5.5 & The system shall assign planned arrival, start, and end times to itinerary activities. \\ \addlinespace[2pt]
+FR-5.6 & The system shall consider the selected transportation mode when estimating travel times and constructing the itinerary. \\ \addlinespace[2pt]
+FR-5.7 & The system shall verify that the itinerary fits within the specified trip time window. \\ \addlinespace[2pt]
+FR-5.8 & The system shall verify compatibility with known place opening hours. \\ \addlinespace[2pt]
+FR-5.9 & The system shall evaluate the itinerary against the user's specified budget constraints and cost-estimation policy. \\ \addlinespace[2pt]
+FR-5.10 & The system shall verify that required places are handled according to their assigned priority and inclusion rules. \\ \addlinespace[2pt]
+FR-5.11 & The system shall reject or identify candidate itineraries that violate mandatory feasibility constraints. \\ \addlinespace[2pt]
+FR-5.12 & The system shall provide understandable feedback when no feasible itinerary can be generated. \\ \addlinespace[2pt]
+FR-5.13 & The system shall display the generated itinerary through an interactive map and structured Trip Summary. \\ \addlinespace[2pt]
+FR-5.14 & The system shall present estimated travel durations, activity durations, and expected costs to the user. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{FR-6: Itinerary Editing and Validation}
+
+The system shall allow users to modify a generated itinerary while ensuring that the resulting schedule remains consistent with the trip constraints.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{Itinerary Editing and Validation}\label{tab:3-8}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-6.1 & The system shall allow users to add a new visit to an existing itinerary. \\ \addlinespace[2pt]
+FR-6.2 & The system shall allow users to remove a planned visit. \\ \addlinespace[2pt]
+FR-6.3 & The system shall allow users to modify supported visit properties, including planned time, duration, and estimated budget. \\ \addlinespace[2pt]
+FR-6.4 & The system shall support changing the order of itinerary activities. \\ \addlinespace[2pt]
+FR-6.5 & The system shall recalculate affected travel segments and activity schedules after itinerary modifications. \\ \addlinespace[2pt]
+FR-6.6 & The system shall revalidate modified itineraries against applicable feasibility constraints. \\ \addlinespace[2pt]
+FR-6.7 & The system shall display validation errors or conflicts caused by proposed modifications. \\ \addlinespace[2pt]
+FR-6.8 & The system shall allow users to review the updated itinerary before accepting it. \\ \addlinespace[2pt]
+FR-6.9 & The system shall allow users to accept a feasible itinerary as the plan to be followed. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{FR-7: Temporary Storage, Saved Trips, and Trip History}
+
+The system shall support temporary guest planning and persistent trip management for registered users.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{Temporary Storage, Saved Trips, and Trip History}\label{tab:3-9}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-7.1 & The system shall allow guests to temporarily retain generated itineraries without authentication. \\ \addlinespace[2pt]
+FR-7.2 & The system shall allow guests to view and modify temporarily retained itineraries while the temporary data remains available. \\ \addlinespace[2pt]
+FR-7.3 & The system shall require authentication before permanently saving an itinerary to a user account. \\ \addlinespace[2pt]
+FR-7.4 & The system shall allow guests to initiate login or registration when requesting to save an itinerary. \\ \addlinespace[2pt]
+FR-7.5 & The system shall preserve the current temporary itinerary through the supported authentication flow so that it can be saved afterward. \\ \addlinespace[2pt]
+FR-7.6 & The system shall allow authenticated users to save, retrieve, and manage their itineraries. \\ \addlinespace[2pt]
+FR-7.7 & The system shall maintain trip lifecycle states, including Ready, Ongoing, and Completed. \\ \addlinespace[2pt]
+FR-7.8 & The system shall allow registered users to view saved trips with their relevant status, date, and summary information. \\ \addlinespace[2pt]
+FR-7.9 & The system shall direct users to the appropriate trip interface according to the selected trip's lifecycle state. \\ \addlinespace[2pt]
+FR-7.10 & The system shall preserve completed trip records for future reference. \\ \addlinespace[2pt]
+FR-7.11 & The system shall allow registered users to delete their saved trips. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{FR-8: Active Trip Execution and Dynamic Replanning}
+
+The system shall support trip execution and adjust the unfinished itinerary when actual progress differs from the original schedule.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{Active Trip Execution and Dynamic Replanning}\label{tab:3-10}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-8.1 & The system shall allow users to start an accepted trip and transition it to the Ongoing state. \\ \addlinespace[2pt]
+FR-8.2 & The system shall display the current visit, completed visits, and remaining scheduled activities. \\ \addlinespace[2pt]
+FR-8.3 & The system shall allow users to mark visits as completed. \\ \addlinespace[2pt]
+FR-8.4 & The system shall allow users to skip planned visits. \\ \addlinespace[2pt]
+FR-8.5 & The system shall allow users to report changes affecting unfinished activities, including delays or changes in visit duration. \\ \addlinespace[2pt]
+FR-8.6 & The system shall record trip progress events and update the corresponding trip state. \\ \addlinespace[2pt]
+FR-8.7 & The system shall allow users to modify supported unfinished activities during an ongoing trip. \\ \addlinespace[2pt]
+FR-8.8 & The system shall reassess the remaining itinerary when a reported event or modification affects its feasibility. \\ \addlinespace[2pt]
+FR-8.9 & The system shall generate an adjusted itinerary for the unfinished portion of the trip when replanning is necessary. \\ \addlinespace[2pt]
+FR-8.10 & The system shall preserve completed activities and their recorded history during replanning. \\ \addlinespace[2pt]
+FR-8.11 & The system shall reuse applicable scheduling and feasibility rules when generating an adjusted itinerary. \\ \addlinespace[2pt]
+FR-8.12 & The system shall present proposed changes to the remaining itinerary for review when confirmation is required. \\ \addlinespace[2pt]
+FR-8.13 & The system shall update the active itinerary after the proposed changes are accepted. \\ \addlinespace[2pt]
+FR-8.14 & The system shall inform users when the remaining itinerary cannot satisfy mandatory constraints. \\ \addlinespace[2pt]
+FR-8.15 & The system shall allow users to end an ongoing trip and record its completion. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{FR-9: Administration and System Management}
+
+The system shall provide administrative capabilities for authorized personnel to maintain user accounts and monitor system operations.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{Administration and System Management}\label{tab:3-11}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-9.1 & The system shall provide a protected administration interface. \\ \addlinespace[2pt]
+FR-9.2 & The system shall allow administrators to view and search registered user accounts. \\ \addlinespace[2pt]
+FR-9.3 & The system shall allow administrators to manage user account status. \\ \addlinespace[2pt]
+FR-9.4 & The system shall allow administrators to view relevant operational information and system error records. \\ \addlinespace[2pt]
+FR-9.5 & The system shall restrict administrative functions to authorized administrators. \\ \addlinespace[2pt]
+FR-9.6 & The system shall prevent administrative access from bypassing established privacy and authorization rules without an explicitly defined permission. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{FR-10: AI-Assisted Trip Planning and Modification}
+
+The system shall support AI-assisted interactions as an extension of the core planning functionality.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{AI-Assisted Trip Planning and Modification}\label{tab:3-12}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-10.1 & The system shall allow users to submit supported trip-planning requests using natural language. \\ \addlinespace[2pt]
+FR-10.2 & The system shall interpret natural-language requests and extract relevant planning information, such as time, budget, location, and preferences. \\ \addlinespace[2pt]
+FR-10.3 & The system shall convert interpreted requests into structured data compatible with the core planning functionality. \\ \addlinespace[2pt]
+FR-10.4 & The system shall allow users to request supported itinerary modifications using natural-language commands. \\ \addlinespace[2pt]
+FR-10.5 & The system shall identify supported modification intentions, such as adding, removing, or reordering visits. \\ \addlinespace[2pt]
+FR-10.6 & The system shall validate AI-generated structured suggestions before applying them to an itinerary. \\ \addlinespace[2pt]
+FR-10.7 & The system shall use the core planning and feasibility functionality to evaluate proposed AI-assisted modifications. \\ \addlinespace[2pt]
+FR-10.8 & The system shall provide understandable feedback when an AI request cannot be interpreted or applied. \\ \addlinespace[2pt]
+FR-10.9 & The system shall preserve the availability of core non-AI trip-planning functions when the AI service is unavailable. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\section{Non-Functional Requirements}
+
+Non-functional requirements specify the quality attributes necessary to ensure that Trippa is usable, reliable, secure, maintainable, and capable of supporting its intended workload.
+
+
+Where quantitative acceptance thresholds have not yet been approved, they are marked as TBD.
+
+
+\subsection{NFR-1: Performance Efficiency}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{Performance Efficiency}\label{tab:3-13}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-1.1 & The system shall respond to ordinary user interactions within an acceptable time under normal operating conditions. & TBD \\ \addlinespace[2pt]
+NFR-1.2 & The system shall generate and validate short-trip itineraries within an acceptable processing time. & TBD \\ \addlinespace[2pt]
+NFR-1.3 & The system shall complete dynamic itinerary recovery within an acceptable processing time. & TBD \\ \addlinespace[2pt]
+NFR-1.4 & The system shall provide visible processing feedback for operations that require noticeable waiting time. & Loading or progress indication is displayed during long-running operations. \\ \addlinespace[2pt]
+NFR-1.5 & The system shall support the expected number of concurrent users without unacceptable performance degradation. & TBD \\ \addlinespace[2pt]
+NFR-1.6 & The system shall avoid unnecessary repeated requests to external mapping and routing services. & Repeated calls are reduced through appropriate request management. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{NFR-2: Usability and Accessibility}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{Usability and Accessibility}\label{tab:3-14}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-2.1 & The system shall provide a consistent and understandable user interface across supported devices. & Core functions remain accessible on supported screen sizes. \\ \addlinespace[2pt]
+NFR-2.2 & The system shall minimize unnecessary input during trip creation by using available defaults and reusable preferences. & Previously configured defaults are applied where relevant. \\ \addlinespace[2pt]
+NFR-2.3 & The system shall clearly present activity schedules, locations, travel durations, and expected costs. & Required trip information is visible in the Trip Summary. \\ \addlinespace[2pt]
+NFR-2.4 & The system shall provide understandable feedback for invalid inputs and infeasible itineraries. & Validation feedback identifies the relevant issue. \\ \addlinespace[2pt]
+NFR-2.5 & The system shall provide clear and accessible controls for trip execution actions. & Users can identify and perform supported actions. \\ \addlinespace[2pt]
+NFR-2.6 & The system shall distinguish between planned activities, completed activities, and proposed itinerary adjustments. & Different activity states are identifiable in the interface. \\ \addlinespace[2pt]
+NFR-2.7 & The system shall support touch-friendly interaction on mobile devices. & Touch controls, map interactions, and forms remain usable on supported devices. \\ \addlinespace[2pt]
+NFR-2.8 & The system shall support efficient trip creation for first-time users. & Usability testing target: TBD \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{NFR-3: Reliability and Availability}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{Reliability and Availability}\label{tab:3-15}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-3.1 & The system shall maintain an acceptable level of availability during normal operation. & TBD \\ \addlinespace[2pt]
+NFR-3.2 & The system shall preserve successfully saved trip data and confirmed progress events. & Saved data remains available after reauthentication or application reload. \\ \addlinespace[2pt]
+NFR-3.3 & The system shall prevent inconsistent trip states when itinerary updates fail or are interrupted. & Failed operations do not leave partially committed trip changes. \\ \addlinespace[2pt]
+NFR-3.4 & The system shall handle unavailable external services without causing unrelated functionality to fail. & Unaffected functions remain accessible. \\ \addlinespace[2pt]
+NFR-3.5 & The system shall clearly report when required external information cannot be retrieved or validated. & An understandable error is displayed. \\ \addlinespace[2pt]
+NFR-3.6 & The system shall preserve completed activity history during replanning. & Completed records remain unchanged after an accepted replan. \\ \addlinespace[2pt]
+NFR-3.7 & The system shall handle repeated or interrupted trip execution requests consistently. & Repeated requests do not produce duplicate progress transitions. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{NFR-4: Security and Privacy}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{Security and Privacy}\label{tab:3-16}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-4.1 & The system shall protect communication involving authentication and personal information using secure transport protocols. & HTTPS is used in deployment. \\ \addlinespace[2pt]
+NFR-4.2 & The system shall securely protect user credentials. & Passwords are stored using an appropriate password-hashing mechanism. \\ \addlinespace[2pt]
+NFR-4.3 & The system shall enforce authorization for protected operations. & Unauthorized requests are rejected. \\ \addlinespace[2pt]
+NFR-4.4 & The system shall prevent unauthorized access to personal trip records and preferences. & Cross-account access attempts are denied. \\ \addlinespace[2pt]
+NFR-4.5 & The system shall validate untrusted input received through user interfaces and external services. & Invalid or malicious input is rejected or safely handled. \\ \addlinespace[2pt]
+NFR-4.6 & The system shall protect authentication tokens and external service credentials. & Secrets are not exposed in public client code or application logs. \\ \addlinespace[2pt]
+NFR-4.7 & The system shall limit the collection and retention of personal and location information to what is necessary for supported functionality. & Data handling follows the defined privacy policy. \\ \addlinespace[2pt]
+NFR-4.8 & The system shall not depend on continuous background location tracking for core trip execution. & Core progress tracking works through explicit user actions. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{NFR-5: Maintainability and Modifiability}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{Maintainability and Modifiability}\label{tab:3-17}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-5.1 & The system shall maintain clear separation between user management, trip planning, feasibility validation, trip execution, and external service integration. & Changes to one functional area do not require unrelated business logic changes. \\ \addlinespace[2pt]
+NFR-5.2 & The system shall support modifications to itinerary-generation strategies without requiring major changes to account management or trip storage. & Planning logic can be changed behind stable functional interfaces. \\ \addlinespace[2pt]
+NFR-5.3 & The system shall isolate provider-specific mapping and routing integration details from core planning logic. & External service adapters can be replaced without changing core domain rules. \\ \addlinespace[2pt]
+NFR-5.4 & The system shall reuse core planning and feasibility rules across itinerary generation, manual editing, and replanning. & These workflows apply consistent validation behavior. \\ \addlinespace[2pt]
+NFR-5.5 & The system shall provide sufficient diagnostic information for troubleshooting. & Relevant operational errors are logged. \\ \addlinespace[2pt]
+NFR-5.6 & The system shall support automated testing of critical functions. & Authentication, validation, trip lifecycle, and replanning behavior can be tested independently. \\ \addlinespace[2pt]
+NFR-5.7 & The mobile interface shall reuse existing application business logic and backend services rather than introduce independent planning rules. & Equivalent desktop and mobile requests produce consistent results. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{NFR-6: Scalability}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{Scalability}\label{tab:3-18}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-6.1 & The system shall support growth in registered users and stored itineraries without requiring a complete architectural redesign. & Target workload: TBD \\ \addlinespace[2pt]
+NFR-6.2 & The system shall support increased itinerary-generation workloads through appropriate resource management. & Target capacity: TBD \\ \addlinespace[2pt]
+NFR-6.3 & The system shall manage external API consumption according to provider limitations. & Provider rate limits are respected. \\ \addlinespace[2pt]
+NFR-6.4 & The system shall avoid unnecessary duplication of persistent trip data and planning computations. & Shared trip representations and planning services are reused. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{NFR-7: Interoperability}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{Interoperability}\label{tab:3-19}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-7.1 & The system shall integrate with external geographic services for place search and route information. & Supported external service requests and responses are handled correctly. \\ \addlinespace[2pt]
+NFR-7.2 & The system shall use defined data contracts for communication between the frontend, backend, and optional AI service. & Service responses conform to documented schemas. \\ \addlinespace[2pt]
+NFR-7.3 & The system shall normalize external place and route data before using it in core planning operations. & Provider-specific formats are converted into internal representations. \\ \addlinespace[2pt]
+NFR-7.4 & The system shall handle incomplete or unavailable external service responses. & Invalid external responses do not produce silently accepted infeasible plans. \\ \addlinespace[2pt]
+NFR-7.5 & The system shall support opening routes or destinations in an external navigation application. & Navigation handoff is available for supported destinations. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{NFR-8: Portability and Responsive Compatibility}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{Portability and Responsive Compatibility}\label{tab:3-20}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-8.1 & The system shall provide a responsive interface for supported desktop and mobile screen sizes. & Core workflows remain usable at representative viewport sizes. \\ \addlinespace[2pt]
+NFR-8.2 & The mobile interface shall prioritize map visibility during itinerary viewing and active trip execution. & Secondary content does not permanently obstruct the primary map workspace. \\ \addlinespace[2pt]
+NFR-8.3 & The mobile interface shall provide access to the full Trip Summary without requiring a separate business workflow. & Users can open and close the summary while retaining the current trip context. \\ \addlinespace[2pt]
+NFR-8.4 & The system shall support touch-based place selection, map gestures, and itinerary editing. & Core map and editing interactions work on supported touch devices. \\ \addlinespace[2pt]
+NFR-8.5 & The system shall preserve consistent trip data and behavior across desktop and mobile interfaces. & The same saved trip produces equivalent authoritative information on both interfaces. \\ \addlinespace[2pt]
+NFR-8.6 & The mobile interface shall remain usable with on-screen keyboards, scrolling, overlays, and long itineraries. & Device interaction testing: TBD \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{NFR-9: Data Integrity and Consistency}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{Data Integrity and Consistency}\label{tab:3-21}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-9.1 & The system shall maintain consistent trip and itinerary data across supported user interfaces. & Desktop and mobile retrieve consistent server-side trip records. \\ \addlinespace[2pt]
+NFR-9.2 & The system shall ensure that confirmed itinerary modifications are validated before becoming authoritative. & Invalid changes are not committed as accepted plans. \\ \addlinespace[2pt]
+NFR-9.3 & The system shall preserve completed activity records when the unfinished itinerary is modified. & Completed activity history remains unchanged. \\ \addlinespace[2pt]
+NFR-9.4 & The system shall maintain valid trip lifecycle transitions. & Unsupported state transitions are rejected. \\ \addlinespace[2pt]
+NFR-9.5 & The system shall distinguish temporary guest data from persistently saved user data. & Guest data is not treated as permanently saved until the required authentication and save process succeeds. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\subsection{NFR-10: AI Service Reliability and Output Validation}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.15\linewidth-0.60\tabcolsep\relax}P{\dimexpr 0.49\linewidth-1.96\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}@{}}
+\caption{AI Service Reliability and Output Validation}\label{tab:3-22}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Non-Functional Requirement} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+NFR-10.1 & The system shall treat AI-generated outputs as untrusted suggestions until they have been structurally validated. & Invalid structured responses are rejected. \\ \addlinespace[2pt]
+NFR-10.2 & The system shall validate AI-proposed itinerary changes using the core planning and feasibility functionality. & AI suggestions cannot bypass mandatory constraints. \\ \addlinespace[2pt]
+NFR-10.3 & The system shall handle AI service failures without disabling the core non-AI planning workflow. & Non-AI trip creation and editing remain available. \\ \addlinespace[2pt]
+NFR-10.4 & The system shall provide understandable feedback when AI processing fails or produces unsupported instructions. & Users receive a clear failure or correction message. \\ \addlinespace[2pt]
+NFR-10.5 & The system shall protect sensitive information exchanged with external AI providers according to the defined privacy policy. & Data-sharing and retention rules: TBD \\ \addlinespace[2pt]
+NFR-10.6 & The system shall process supported AI requests within an acceptable response time. & TBD \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\section{Mobile Functional Requirements}
+
+The mobile implementation extends the existing Web App through responsive layouts and touch-oriented interaction. It shall reuse the same backend APIs, trip data, and business rules rather than introduce an independent planning system.
+
+
+Although responsive compatibility is a non-functional requirement, several mobile interactions represent specific functional behaviors and are therefore defined separately.
+
+
+\subsection{FR-11: Mobile Trip Planning and Management}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.16\linewidth-0.32\tabcolsep\relax}P{\dimexpr 0.84\linewidth-1.68\tabcolsep\relax}@{}}
+\caption{Mobile Trip Planning and Management}\label{tab:3-23}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{ID} & \textbf{Functional Requirement} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+FR-11.1 & The system shall allow users to complete the trip creation workflow on a mobile device. \\ \addlinespace[2pt]
+FR-11.2 & The system shall support touch-based selection of start locations, end locations, and desired places. \\ \addlinespace[2pt]
+FR-11.3 & The system shall allow users to review and correct trip request information before generating an itinerary on mobile. \\ \addlinespace[2pt]
+FR-11.4 & The system shall provide a map-first mobile itinerary view. \\ \addlinespace[2pt]
+FR-11.5 & The system shall allow users to open and close the Trip Summary while preserving the current map context. \\ \addlinespace[2pt]
+FR-11.6 & The system shall allow users to edit visit information, including time, duration, and budget, within the mobile Trip Summary. \\ \addlinespace[2pt]
+FR-11.7 & The system shall allow users to add and remove visits through the mobile interface. \\ \addlinespace[2pt]
+FR-11.8 & The system shall allow users to perform supported active-trip actions, including completing visits, skipping visits, requesting replanning, and ending trips. \\ \addlinespace[2pt]
+FR-11.9 & The system shall allow users to review updated remaining itineraries before confirming applicable replanning changes. \\ \addlinespace[2pt]
+FR-11.10 & The system shall provide mobile access to saved trips, ongoing trips, and completed trip history. \\ \addlinespace[2pt]
+FR-11.11 & The system shall use the same backend validation and authoritative trip information for desktop and mobile operations. \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+\section{Business Rules}
+
+Status: To Be Determined (TBD)
+
+
+The detailed business rules governing itinerary feasibility, trip lifecycle transitions, activity priorities, budget policies, guest data retention, and dynamic replanning will be finalized after further discussion among the project team.
+
+
+These rules will define the conditions under which trip requests, itinerary modifications, and execution events are considered valid.
+
+
+The functional requirements identified in this chapter establish the expected system capabilities. The corresponding business rules will be documented separately to specify detailed constraints and decision logic.
+
+
+\section{Requirements Prioritization}
+
+The requirements are prioritized according to their importance to Trippa's primary objectives and the intended implementation sequence.
+
+
+The initial development focuses on a complete non-AI Web App. Mobile-specific presentation and AI-assisted capabilities are subsequent extensions that reuse the established core functionality.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.23\linewidth-0.92\tabcolsep\relax}P{\dimexpr 0.36\linewidth-1.44\tabcolsep\relax}P{\dimexpr 0.41\linewidth-1.64\tabcolsep\relax}@{}}
+\caption{Requirements Prioritization}\label{tab:3-24}\\
+\toprule
+\textbf{Priority / Phase} & \textbf{Functional Areas} & \textbf{Rationale} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{Priority / Phase} & \textbf{Functional Areas} & \textbf{Rationale} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Core Web MVP & FR-1: Authentication and Accounts & Provides persistent accounts and protected functions \\ \addlinespace[2pt]
+Core Web MVP & FR-2: Preferences & Supports reusable planning defaults \\ \addlinespace[2pt]
+Core Web MVP & FR-3: Trip Requests & Captures the user's planning constraints \\ \addlinespace[2pt]
+Core Web MVP & FR-4: Places and Maps & Supports location selection and geographic visualization \\ \addlinespace[2pt]
+Core Web MVP & FR-5: Generation and Feasibility & Implements the primary planning capability \\ \addlinespace[2pt]
+Core Web MVP & FR-6: Itinerary Editing & Allows users to refine generated plans \\ \addlinespace[2pt]
+Core Web MVP & FR-7: Storage and History & Supports guest planning and persistent trip management \\ \addlinespace[2pt]
+Core Web MVP & FR-8: Active Trip and Replanning & Implements execution-aware planning \\ \addlinespace[2pt]
+Required, scope to refine & FR-9: Administration & Provides system administration; detailed scope remains subject to team confirmation \\ \addlinespace[2pt]
+Mobile Extension & FR-11: Mobile Planning and Management & Extends the established Web App workflows to mobile devices \\ \addlinespace[2pt]
+AI Extension & FR-10: AI-Assisted Planning & Adds natural-language interaction without replacing deterministic planning \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+The distinction between the core Web MVP and subsequent extensions is important. The system must be able to generate, validate, edit, execute, and recover itineraries without depending on AI capabilities.
+
+
+Similarly, the mobile implementation shall reuse the same planning services and data structures rather than implement separate business logic.
+
+
+\section{Requirements Traceability}
+
+The following table maps the system objectives identified in Chapter 1 to the corresponding functional and non-functional requirements.
+
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}P{\dimexpr 0.42\linewidth-1.68\tabcolsep\relax}P{\dimexpr 0.29\linewidth-1.16\tabcolsep\relax}P{\dimexpr 0.29\linewidth-1.16\tabcolsep\relax}@{}}
+\caption{Requirements Traceability}\label{tab:3-25}\\
+\toprule
+\textbf{System Objective} & \textbf{Functional Requirements} & \textbf{Non-Functional Requirements} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape Table \thetable{} (continued)}\\
+\toprule
+\textbf{System Objective} & \textbf{Functional Requirements} & \textbf{Non-Functional Requirements} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\itshape Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Reduce trip-planning effort & FR-2, FR-3, FR-5, FR-10 & NFR-1, NFR-2 \\ \addlinespace[2pt]
+Support planning without a predetermined destination & FR-3, FR-4, FR-5 & NFR-2, NFR-7 \\ \addlinespace[2pt]
+Generate realistic short-trip itineraries & FR-3, FR-4, FR-5 & NFR-1, NFR-3, NFR-9 \\ \addlinespace[2pt]
+Respect time, budget, and place constraints & FR-3, FR-5, FR-6 & NFR-3, NFR-9 \\ \addlinespace[2pt]
+Support interactive map-based planning & FR-4, FR-6, FR-11 & NFR-2, NFR-7, NFR-8 \\ \addlinespace[2pt]
+Allow guest planning without registration & FR-1, FR-3, FR-7 & NFR-2, NFR-4, NFR-9 \\ \addlinespace[2pt]
+Support persistent trip management & FR-1, FR-7 & NFR-3, NFR-4, NFR-9 \\ \addlinespace[2pt]
+Track trip execution & FR-7, FR-8 & NFR-2, NFR-3, NFR-9 \\ \addlinespace[2pt]
+Recover from schedule deviations & FR-6, FR-8 & NFR-1, NFR-3, NFR-5, NFR-9 \\ \addlinespace[2pt]
+Support mobile trip planning & FR-11 & NFR-2, NFR-5, NFR-8 \\ \addlinespace[2pt]
+Support AI-assisted interactions & FR-10 & NFR-5, NFR-7, NFR-10 \\ \addlinespace[2pt]
+Support administration and operational management & FR-1, FR-9 & NFR-3, NFR-4, NFR-5 \\ \addlinespace[2pt]
+Support future extensions & FR-4, FR-5, FR-8, FR-10 & NFR-5, NFR-6, NFR-7 \\ \addlinespace[2pt]
+\end{longtable}
+\endgroup
+
+
+
+

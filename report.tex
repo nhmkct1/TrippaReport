@@ -1,0 +1,82 @@
+\documentclass[11pt,a4paper,oneside]{report}
+
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\usepackage[english]{babel}
+\usepackage[left=28mm,right=25mm,top=26mm,bottom=26mm,headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.12}
+\usepackage{microtype}
+\usepackage{array,longtable,booktabs}
+\usepackage{pdflscape}
+\usepackage{enumitem}
+\setlist{leftmargin=*,itemsep=4pt,topsep=5pt,parsep=0pt}
+\usepackage{needspace}
+\usepackage{etoolbox}
+\preto\section{\Needspace*{9\baselineskip}}
+\preto\subsection{\Needspace*{8\baselineskip}}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\nouppercase{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}\renewcommand{\headrulewidth}{0pt}}
+\usepackage{xcolor}
+\definecolor{linkblue}{HTML}{214E76}
+\usepackage[colorlinks=true,linkcolor=linkblue,urlcolor=linkblue,citecolor=linkblue,bookmarksnumbered=true]{hyperref}
+\usepackage{bookmark}
+\input{metadata}
+\hypersetup{pdftitle={\ReportTitle: \ReportSubtitle},pdfsubject={\ReportType},pdfauthor={\ReportAuthors}}
+
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\sourcetbd}{\textsuperscript{[source TBD]}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\LTpre}{8pt}
+\setlength{\LTpost}{10pt}
+\setlength{\emergencystretch}{2em}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{2}
+\widowpenalty=10000
+\clubpenalty=10000
+\raggedbottom
+
+\begin{document}
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+  \centering
+  \vspace*{25mm}
+  {\Large\sffamily \ReportType\par}
+  \vspace{18mm}
+  {\Huge\bfseries \ReportTitle\par}
+  \vspace{6mm}
+  {\LARGE \ReportSubtitle\par}
+  \vspace{20mm}
+  {\large Introduction, Existing System Analysis,\par System Analysis\par}
+  \vfill
+  {\large \ReportInstitution\par}
+  \vspace{4mm}
+  {\ReportAuthors\par}
+  {\ReportSupervisor\par}
+  \vspace{12mm}
+  {\ReportDate\par}
+\end{titlepage}
+
+\pagenumbering{roman}
+\hypersetup{pageanchor=true}
+\tableofcontents
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+\begingroup
+\small
+\listoftables
+\endgroup
+\clearpage
+\pagenumbering{arabic}
+\input{chapters/01_introduction}
+\input{chapters/02_existing_system_analysis}
+\input{chapters/03_system_analysis}
+\end{document}

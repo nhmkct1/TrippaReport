@@ -1,0 +1,68 @@
+name: Build report PDF
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: report-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Install LaTeX toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y latexmk texlive-xetex texlive-latex-extra texlive-fonts-recommended fonts-texgyre
+
+      - name: Compile report
+        run: latexmk report.tex
+
+      - name: Check compilation diagnostics
+        run: |
+          if grep -E 'Overfull \\[hv]box|Missing character:|There were undefined references|There were multiply-defined labels' build/report.log; then
+            echo 'Resolve layout or reference errors before publishing the PDF.'
+            exit 1
+          fi
+
+      - name: Record source revision
+        run: |
+          printf '%s\n' "$GITHUB_SHA" > build/source-commit.txt
+          sha256sum build/report.pdf > build/report.sha256
+
+      - name: Upload PDF
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: trippa-report-${{ github.sha }}
+          path: |
+            build/report.pdf
+            build/source-commit.txt
+            build/report.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Link PDF download in run summary
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          printf '### Trippa report\n\n[Download PDF artifact](%s)\n\nSource commit: `%s`\n' "$ARTIFACT_URL" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload diagnostic log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trippa-report-build-log-${{ github.sha }}
+          path: build/report.log
+          if-no-files-found: ignore
+          retention-days: 7
