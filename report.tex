@@ -9,6 +9,9 @@
 \setstretch{1.12}
 \usepackage{microtype}
 \usepackage{array,longtable,booktabs}
+\usepackage{graphicx,tabularx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
 \usepackage{pdflscape}
 \usepackage{enumitem}
 \setlist{leftmargin=*,itemsep=4pt,topsep=5pt,parsep=0pt}
@@ -31,6 +34,16 @@
 \hypersetup{pdftitle={\ReportTitle: \ReportSubtitle},pdfsubject={\ReportType},pdfauthor={\ReportAuthors}}
 
 \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Q}[1]{P{\dimexpr #1\linewidth-2\tabcolsep\relax}}
+\newenvironment{architecturetable}[3]{%
+  \begingroup\small\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.18}%
+  \begin{longtable}{#1}\caption{#2}\\\toprule
+  #3\\\midrule\endfirsthead
+  \caption[]{#2 (continued)}\\\toprule
+  #3\\\midrule\endhead
+  \bottomrule\endfoot
+}{\end{longtable}\endgroup}
+\newcommand{\archcite}[2]{\hyperref[ref:#1]{[#2]}}
 \newcommand{\sourcetbd}{\textsuperscript{[source TBD]}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
@@ -45,28 +58,15 @@
 
 \begin{document}
 \hypersetup{pageanchor=false}
-\begin{titlepage}
-  \centering
-  \vspace*{25mm}
-  {\Large\sffamily \ReportType\par}
-  \vspace{18mm}
-  {\Huge\bfseries \ReportTitle\par}
-  \vspace{6mm}
-  {\LARGE \ReportSubtitle\par}
-  \vspace{20mm}
-  {\large Introduction, Existing System Analysis,\par System Analysis\par}
-  \vfill
-  {\large \ReportInstitution\par}
-  \vspace{4mm}
-  {\ReportAuthors\par}
-  {\ReportSupervisor\par}
-  \vspace{12mm}
-  {\ReportDate\par}
-\end{titlepage}
+\input{frontmatter/cover}
 
 \pagenumbering{roman}
 \hypersetup{pageanchor=true}
+\begingroup
+\small
+\setstretch{1.0}
 \tableofcontents
+\endgroup
 \clearpage
 \phantomsection
 \addcontentsline{toc}{chapter}{List of Tables}
@@ -75,8 +75,12 @@
 \listoftables
 \endgroup
 \clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+\clearpage
 \pagenumbering{arabic}
 \input{chapters/01_introduction}
-\input{chapters/02_existing_system_analysis}
-\input{chapters/03_system_analysis}
+\input{chapters/02_requirements}
+\input{chapters/03_architecture_design}
 \end{document}

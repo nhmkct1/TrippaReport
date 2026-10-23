@@ -1,0 +1,24 @@
+% Logical runtime view. All six modules are inside a single backend process.
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw=linkblue,rounded corners=2pt,align=center,text width=3.5cm,minimum height=1cm,fill=blue!3},
+  flow/.style={-{Latex[length=2mm]},thick},
+  ext/.style={box,dashed,fill=white}
+]
+\node[box,text width=8cm] (browser) at (0,0) {Responsive web client\\Desktop and mobile browsers};
+\node[draw=linkblue,rounded corners=3pt,minimum width=12.7cm,minimum height=3.5cm] (backend) at (0,-2.8) {};
+\node[font=\small\bfseries] at (0,-1.35) {Trippa backend: one process and one deployment unit};
+\node[box] at (-4.1,-2.2) {Accounts and Preferences};
+\node[box] at (0,-2.2) {Trip Management};
+\node[box] at (4.1,-2.2) {Planning and Feasibility};
+\node[box] at (-4.1,-3.5) {Place and Route Integration};
+\node[box] at (0,-3.5) {AI Assistance};
+\node[box] at (4.1,-3.5) {Administration};
+\node[box] (db) at (-4.1,-5.8) {Application database\\Module-owned tables};
+\node[ext] (geo) at (0,-5.8) {External geographic APIs\\Places and routes};
+\node[ext] (ai) at (4.1,-5.8) {External AI provider\\Optional integration};
+\draw[flow] (browser.south) -- node[right,font=\footnotesize]{HTTPS API} (backend.north);
+\draw[flow] (-4.1,-4.55) -- node[left,font=\footnotesize]{Persistence} (db.north);
+\draw[flow] (0,-4.55) -- node[right,font=\footnotesize]{Provider adapter} (geo.north);
+\draw[flow] (4.1,-4.55) -- node[right,font=\footnotesize]{Provider adapter} (ai.north);
+\end{tikzpicture}

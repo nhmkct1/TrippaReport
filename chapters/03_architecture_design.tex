@@ -1,0 +1,194 @@
+% Newly proposed design, based on the report requirements and cited architecture literature.
+\chapter{Architecture Design}
+\label{ch:architecture}
+
+\section{Architectural Context and Decision Drivers}
+Trippa converts a user's time, location, budget and preferences into a feasible short-trip itinerary, retains it, and revises unfinished activities as the trip progresses. These operations share a trip model and feasibility rules. The architecture must separate responsibilities while keeping planning straightforward to implement, test and operate.
+
+This chapter compares four alternatives and selects a \textbf{modular monolith with layered modules}. This is a proposed design, not verified implementation. No language, framework, cloud platform, separate AI runtime, traffic level or team size is mandatory. Quantitative targets marked TBD in Chapter~\ref{ch:requirements} remain unmeasured.
+
+The following requirements have the greatest effect on the decision.
+\begin{architecturetable}{Q{.25}Q{.45}Q{.30}}{Architecture decision drivers}{\textbf{Driver} & \textbf{Consequence for Trippa} & \textbf{Requirement basis}}
+Consistent planning rules & Generation, editing and recovery must use the same feasibility authority. & FR-5, FR-6, FR-8; NFR-5.4 \\ \addlinespace
+Safe trip updates & A failed change must not leave a partially updated accepted itinerary; completed history must be preserved. & FR-8.10; NFR-3.3, NFR-9.2--9.4 \\ \addlinespace
+Modifiability and testing & Planning strategies, provider integration and account management need clear boundaries. & NFR-5.1--5.6 \\ \addlinespace
+Optional AI & AI suggestions require validation, and ordinary planning must continue during an AI-provider outage. & FR-10.6--10.9; NFR-10.1--10.4 \\ \addlinespace
+Controlled external dependencies & Geographic data must be normalized, with rate limits and incomplete responses handled explicitly. & FR-4; NFR-1.6, NFR-6.3, NFR-7.3--7.4 \\ \addlinespace
+Practical delivery & Prefer a small operational footprint and understandable dependencies while workload targets remain TBD. & Project design preference; NFR-5, NFR-6 \\
+\end{architecturetable}
+
+\section{Candidate Architectures}
+These alternatives describe backend partitioning and deployment. Layering and Clean Architecture organize dependencies within a monolith or service. Separately hosted frontend assets, a database or external APIs do not make a backend microservices-based: a monolithic backend can contain multiple libraries while remaining one deployment unit.\archcite{common}{1}
+
+\subsection{Layered Monolith}
+A layered monolith deploys presentation, business and data-access layers together. Here, the candidate uses application-wide layers without enforced business-module boundaries. Requests remain in one process, and a relational transaction can cover a complete trip update, simplifying initial deployment and debugging.
+
+Accounts, planning, execution and integration may gradually share a broad business layer, allowing feature changes to affect unrelated classes. Dependency inversion improves testability but does not establish business boundaries. This candidate is viable; enforcing clearer ownership would move it toward the modular alternative.
+
+\subsection{Modular Monolith}
+A modular monolith deploys one backend organized into explicit business modules. Each module exposes a small application contract while keeping entities, persistence details and implementation private. Modules communicate through local contract calls. Project/package references, visibility rules and dependency checks enforce the boundaries; directory names alone are insufficient.
+
+Trip management and planning remain close enough for simple coordination, while account, integration and administrative responsibilities stay separate. One release unit supports local transactions for authoritative trip changes. Modules cannot be deployed or scaled independently, and all remain exposed to process-wide failures; layering does not remove these limitations.
+
+\subsection{Service-Based Architecture with Few Services}
+Service-based architecture uses independently deployed, coarse-grained services and may share a database.\archcite{servicebased}{2} This comparison considers two layered services: Trip Application for accounts, saved trips and execution, and Planning for generation, feasibility and recovery. Two services are a Trippa-specific candidate, not a universal service count.
+
+Planning could scale or be released independently, but generation, editing and recovery would each cross a network boundary for feasibility checks. A shared database increases schema coupling; separate ownership requires versioned contracts and coordination between validation and trip commits. Both add failure cases. An AI-only split is possible, but no separate runtime or deployment need has been established.
+
+\subsection{Microservices Architecture}
+Microservices use independently deployed business services, private data ownership and remote contracts. Their independent deployment and scaling introduce consistency, networking, testing and operational challenges.\archcite{microservices}{3}
+
+Trippa could be split into Account, Preference, Trip, Planning, Execution and AI services, making recovery depend on several remote calls and data owners. This helps when independent teams, workloads or releases justify separation. Current requirements establish no such constraint, so the split would add obligations before demonstrating a benefit.
+
+\section{Comparison and Evaluation}
+\subsection{Qualitative Comparison}
+\begin{architecturetable}{Q{.24}Q{.19}Q{.19}Q{.19}Q{.19}}{Comparison of backend architecture alternatives}{\textbf{Criterion} & \textbf{Layered monolith} & \textbf{Modular monolith} & \textbf{Few services} & \textbf{Microservices}}
+Backend deployment units & One & One & Two in this candidate & Several \\ \addlinespace
+Business separation & Broad layers; extra discipline needed & Explicit module contracts & Remote service contracts & Remote bounded contexts \\ \addlinespace
+Trip-update coordination & Local transaction & Local transaction with module ownership & Remote planning result plus local commit & Cross-service consistency mechanisms \\ \addlinespace
+Internal communication & Local calls & Local calls through public module APIs & Local and network calls & Predominantly network calls \\ \addlinespace
+Independent scaling & Whole backend & Whole backend & Per coarse service & Per service \\ \addlinespace
+Fault boundary & Shared process & Shared process & Separate service processes & Separate service processes \\ \addlinespace
+Testing emphasis & Layer and end-to-end tests & Module and boundary tests & Service-contract and integration tests & Contract, integration and distributed-flow tests \\ \addlinespace
+Main Trippa trade-off & Fast start; broad coupling risk & Boundary discipline; shared deployment & Extra coordination around feasibility & Operational cost exceeds established need \\
+\end{architecturetable}
+
+Service alternatives provide process isolation only when callers handle failures. A monolith can instead contain external-provider outages through adapters and bounded calls. Provider-outage handling and internal process isolation protect against different failures.
+
+\subsection{Weighted Decision Matrix}
+The weights prioritize straightforward delivery, separation and consistent trip changes over independent scaling. Scores from 1 (least suitable) to 5 (most suitable) are project-specific engineering judgments, not benchmarks or universal architecture ratings. The weighted result is $\sum_i (w_i/100)s_i$.
+
+\begin{architecturetable}{Q{.40}Q{.15}Q{.15}Q{.15}Q{.15}}{Project-specific architecture decision matrix}{\textbf{Criterion (weight)} & \textbf{Layered monolith} & \textbf{Modular monolith} & \textbf{Few services} & \textbf{Micro\-services}}
+Delivery and operational simplicity (25\%) & 5 & 4 & 3 & 1 \\ \addlinespace
+Modularity and isolated testing (20\%) & 3 & 5 & 4 & 4 \\ \addlinespace
+Consistency of trip changes (20\%) & 5 & 5 & 3 & 2 \\ \addlinespace
+Failure containment (15\%) & 3 & 3 & 4 & 4 \\ \addlinespace
+Independent scaling (10\%) & 2 & 2 & 4 & 5 \\ \addlinespace
+Ease of later evolution (10\%) & 3 & 4 & 4 & 4 \\ \addlinespace
+\textbf{Weighted result / 5} & \textbf{3.80} & \textbf{4.05} & \textbf{3.55} & \textbf{2.95} \\
+\end{architecturetable}
+
+The modular monolith receives a lower simplicity score than the conventional layered alternative because creating and maintaining module contracts has a real cost. Both monoliths receive the same consistency and failure-containment scores because modules do not create separate transaction managers or process boundaries. The service candidates receive higher independent-scaling scores but incur the coordination cost described above. Microservices' finer release boundaries can ease isolated changes, but moving responsibilities between remote services is harder while the domain is still evolving.
+
+As a sensitivity check, moving ten percentage points from delivery simplicity to independent scaling gives results of 3.50, 3.85, 3.65 and 3.35 respectively, preserving the ranking. This calculation does not prove that the choice is always correct. A mandatory separate runtime, demonstrated resource bottleneck, or independently released subsystem would require the alternatives and scores to be reconsidered. The current preference for a monolithic start is also consistent with Fowler's argument for learning domain boundaries before accepting distributed-system costs.\archcite{monolithfirst}{4}
+
+\section{Selected Architecture and Rationale}
+\textbf{Decision: use a modular monolith with layered modules, one backend deployment unit and one application database.} The responsive frontend uses an HTTPS API; geographic and optional AI providers connect through replaceable adapters.
+
+Generation, validation, editing and recovery stay in one backend, allowing atomic trip updates. Modules provide the separation required by NFR-5 without separate deployments. AI remains an internal capability using an external-provider adapter; it neither owns accepted itineraries nor requires a Trippa-owned AI service.
+
+A conventional layered monolith lacks the explicit ownership Trippa needs for trips, planning, accounts and integration. The two-service boundary cuts across closely coordinated planning and execution. Microservices add deployment and consistency mechanisms without an established need. Greater deployment complexity would not itself improve architectural quality.
+
+The choice accepts shared process failures, coordinated releases and whole-backend scaling. These costs are acceptable for the current scope, subject to evaluation against performance and capacity targets that remain TBD.
+
+\section{Logical Structure and Module Responsibilities}
+Figure~\ref{fig:system-overview} places all six modules inside one backend. The database is a data store, while geographic and AI APIs are external providers, not additional Trippa business services.
+
+\begin{figure}[htbp]
+\centering
+\input{diagrams/system_overview}
+\caption{Proposed modular-monolith runtime structure. Arrows show external runtime interactions; internal module calls are omitted for readability.}
+\label{fig:system-overview}
+\end{figure}
+
+\begin{architecturetable}{Q{.25}Q{.50}Q{.25}}{Proposed business modules and ownership}{\textbf{Module} & \textbf{Responsibility and boundary} & \textbf{Requirement coverage}}
+Accounts and Preferences & Authentication/session integration, profiles, authorization context and saved preferences. Exposes account and preference application operations, not credential records. & FR-1, FR-2 \\ \addlinespace
+Trip Management & Owns saved trip state, itinerary versions, progress events, guest-to-account saving and history. Orchestrates planning and applies validated changes. & FR-3, FR-6, FR-7, FR-8 \\ \addlinespace
+Planning and Feasibility & Selects and schedules candidate visits, checks constraints and proposes recovery for unfinished activities. Owns reusable planning policies; cannot commit an accepted trip. & FR-5; validation in FR-6 and FR-8 \\ \addlinespace
+Place and Route Integration & Normalizes provider place/route information, coordinates bounded requests and supports provider-aware caching. Does not decide whether a trip is accepted. & FR-4; NFR-6.3, NFR-7 \\ \addlinespace
+AI Assistance & Converts supported language requests into typed planning inputs or proposed edits. Validates structure and uses the same ordinary trip workflows for authoritative decisions. & FR-10; NFR-10 \\ \addlinespace
+Administration & Provides the approved protected administrative operations. Calls account or trip application contracts where necessary instead of modifying their tables directly. Detailed capability scope remains TBD. & FR-9; NFR-4 \\
+\end{architecturetable}
+
+FR-11 uses the responsive frontend and existing backend operations. It introduces neither a separate mobile planning module nor duplicate feasibility rules.
+
+Trip Management orchestrates a complete trip command. It obtains preference data through the Accounts and Preferences contract, invokes Planning and Feasibility, and persists an accepted result. Planning obtains normalized geographic information through a provider-neutral contract fulfilled by Place and Route Integration. AI Assistance returns a typed proposal to the ordinary command boundary instead of calling a private trip repository. Administration uses the affected module's public operations. This direction avoids a cycle in which the planner both controls and persists the trip that invoked it.
+
+Public module contracts use explicit request and result types. Modules do not read another module's tables, import its persistence entities, or expose provider-specific responses as shared domain objects. Shared code is limited to stable technical primitives such as identifiers and error envelopes; it is not a common container for every business rule. Not every function or class needs its own interface: abstraction is concentrated at module, persistence and external-provider boundaries.
+
+\section{Layers and Dependency Rules}
+\subsection{Layer Responsibilities}
+Each module uses the following logical layers where useful, represented by packages, libraries or folders with enforced dependency rules. Trivial modules need neither a large project tree nor empty layers.
+
+\begin{architecturetable}{Q{.23}Q{.49}Q{.28}}{Layers inside a backend module}{\textbf{Layer} & \textbf{Responsibility} & \textbf{Trippa example}}
+Presentation / API & Decode requests, perform boundary checks, require the appropriate identity and map results to responses. Domain acceptance remains in the use case. & Submit a trip request; report a completed visit. \\ \addlinespace
+Application & Coordinate a use case, enforce operation-level authorization, define outgoing ports, and choose the transaction boundary. & Load a trip, request recovery, validate its version and commit an accepted change. \\ \addlinespace
+Domain & Represent business state and implement planning and lifecycle policies independently of HTTP, persistence and provider libraries. Policy values awaiting approval stay TBD. & Feasibility checks; preservation of completed activities. \\ \addlinespace
+Infrastructure & Implement persistence, geographic/AI clients, caching and other external mechanisms behind the application ports. & A route-provider adapter; a trip repository. \\
+\end{architecturetable}
+
+\subsection{Source Dependencies and Runtime Calls}
+Source dependencies point toward the application/domain core. Infrastructure implements ports declared by the inner layers; the core does not import a database driver or AI SDK. This is the dependency-inversion principle used by Clean Architecture.\archcite{clean}{5} Figure~\ref{fig:module-layers} depicts dependencies between code units, not a sequence of network calls.
+
+\begin{figure}[htbp]
+\centering
+\input{diagrams/module_layers}
+\caption{Source dependency rules within a module. The dashed dependency is restricted to startup composition; ordinary request handlers use application contracts.}
+\label{fig:module-layers}
+\end{figure}
+
+At runtime, a use case can call an outgoing port and receive a result from its infrastructure implementation. That runtime call does not reverse the source dependency rule. A small composition root constructs the adapters and injects them into the use cases. Integration code is kept at that root, rather than scattered through controllers or domain classes.
+
+Consumers reference only a module's public contract; the host composes its implementation. Dependency checks reject internal cross-module access, domain-to-infrastructure references and module cycles, making low coupling enforceable.
+
+\section{Principal Runtime Flows}
+\subsection{Generating and Saving an Itinerary}
+\begin{enumerate}
+\item The frontend submits structured constraints; AI input is first converted to the same format. Saved preferences are applied without changing account defaults.
+\item The application validates the request and invokes Planning and Feasibility. Place and Route Integration supplies normalized locations, routes and known opening information.
+\item The planner generates and checks a candidate. Missing facts remain explicit rather than silently satisfied; handling unknown prices or hours still requires policy approval.
+\item The user receives a result or an understandable infeasibility explanation. A preview is not a permanently saved trip.
+\item Acceptance/saving rechecks authoritative inputs, version and authorization, then writes the trip in a local transaction. Guest persistence follows FR-7 authentication requirements.
+\end{enumerate}
+
+\subsection{Editing and Recovering an Active Trip}
+Trip Management separates completed records from unfinished activities, then passes the trip snapshot and proposed change to the same feasibility authority used for generation. The proposal describes remaining activities and schedule effects while preserving completed records.
+
+External route or AI calls occur before the short database write transaction, not while database locks are held across a network wait. The proposal is associated with the source itinerary version. Where confirmation is required, the user reviews the proposed result before it becomes authoritative. At commit time, the application checks that the source version is still current and that time-dependent validity has not expired; stale or expired proposals require renewed evaluation. Exact validity windows and confirmation policy remain TBD.
+
+An accepted itinerary, its progress effects and its new version are written together. A failure rolls the write back. Request identifiers and an atomic duplicate check prevent retries of a confirmed progress command from creating duplicate transitions. These are proposed integrity mechanisms for NFR-3 and NFR-9, not claims about already implemented behavior.
+
+\subsection{AI-Assisted Requests and Failure Handling}
+AI Assistance treats model output as untrusted data. It checks the expected schema and supported intent, then submits the resulting request through the normal application boundary. It neither executes arbitrary model instructions nor writes a trip directly. Structural validation is followed by the same domain feasibility checks applied to non-AI operations.
+
+Provider calls have bounded execution time and concurrency. An AI timeout, rejected output or unavailable provider produces a clear response while ordinary forms, editing and deterministic planning remain available. Keeping an adapter in-process does not isolate a fatal process crash; process-level isolation is an acknowledged limitation of the selected architecture. Retry count, timeouts and provider data-retention values must be chosen alongside the outstanding NFR targets rather than invented here.
+
+\section{Deployment, Persistence and Cross-Cutting Concerns}
+\subsection{Minimal Deployment and Scaling}
+The baseline uses a browser frontend, one backend and one relational database. Frontend assets may use backend or static hosting without changing the architecture. Containers are optional; a separate gateway, broker, service-discovery system or orchestration cluster is unnecessary.
+
+The database holds authoritative trip and account state. Multiple backend instances require compatible sessions and state coordination; disposable in-memory caches cannot authorize trips or confirmations. Scaling replicates the whole backend. Scaling only the planner would require a later service-extraction decision.
+
+\subsection{Data Ownership and Transaction Scope}
+One database contains module-owned tables and persistence code. Trip Management owns itineraries, versions and execution records; Accounts and Preferences owns account data. Planning computes results without storing another authoritative trip copy. Other modules use public contracts.
+
+The shared store permits local ACID transactions, not unrestricted cross-module SQL. Atomic trip updates concern trip-owned records; operations spanning owners require explicit contracts and transaction policies. Detailed entities, columns and schema design remain outside this chapter.
+
+\subsection{Security, Provider Resilience and Diagnostics}
+HTTPS protects client/provider communication. Backend use cases verify identity and ownership, including AI and administrative requests. Established framework facilities handle credentials and sessions behind Accounts; server configuration holds provider secrets. Logs exclude secrets and unnecessary personal/location data.
+
+Geographic calls are normalized and subject to rate-limit handling. Cached route/place facts carry freshness information so that outdated or incomplete information is not silently treated as verified. An unavailable required route blocks only the affected planning operation and produces an explanation; it does not prevent unrelated account or history operations. A correlation identifier connects the API request, planner steps and outgoing provider calls. Health reporting and structured logs make failures observable without requiring distributed tracing infrastructure in the initial deployment.
+
+\section{Trade-offs and Architectural Verification}
+Simple coordination and deployment depend on enforced module boundaries. Shared database/process access can still create coupling if entities leak or modules read each other's tables. Modularity alone cannot guarantee unspecified or unmeasured performance and availability targets.
+
+\begin{architecturetable}{Q{.34}Q{.43}Q{.23}}{Proposed checks for the selected architecture}{\textbf{Property to verify} & \textbf{Suggested evidence} & \textbf{Requirement basis}}
+Boundary enforcement & Dependency checks reject internal cross-module access and infrastructure imports in the domain core. & NFR-5.1--5.3 \\ \addlinespace
+Shared feasibility authority & Generation, editing and recovery evaluate equivalent constraint cases through the same policy implementation. & NFR-5.4; FR-5, FR-6, FR-8 \\ \addlinespace
+Atomic and repeatable trip changes & A forced save failure preserves the previous trip; retrying a confirmed command does not duplicate progress. & NFR-3.3, NFR-3.7, NFR-9 \\ \addlinespace
+Preserved history and stale-change rejection & Recovery leaves completed records unchanged; an outdated proposal cannot overwrite a newer itinerary. & FR-8.10; NFR-9.2--9.4 \\ \addlinespace
+Provider failure containment & Simulated AI failure leaves non-AI planning usable; missing geographic data produces explicit affected-operation failure. & FR-10.9; NFR-3.4, NFR-7.4 \\ \addlinespace
+Access control and responsive consistency & Cross-account operations are rejected; equivalent desktop/mobile requests use the same authoritative trip data. & NFR-4.3--4.4, NFR-8.5 \\
+\end{architecturetable}
+
+These checks describe evidence to collect during implementation and testing; they are not reported test results. Independent service extraction should be reconsidered only when measurements or new constraints justify it, such as a planner resource bottleneck or an AI runtime that must be isolated. A future extracted service would retain the same presentation/application/domain/infrastructure separation, but network contracts and failure handling would then be part of a new architecture decision. The current selected architecture remains the modular monolith.
+
+\section{References}
+The following sources support the architectural concepts. Trippa's module boundaries, candidate partitions, evaluation weights, scores and final decision are the project-specific analysis proposed in this chapter. Sources were accessed on 23 October 2026.
+\begin{enumerate}[label={[\arabic*]},leftmargin=*,itemsep=8pt]
+\item\label{ref:common} Microsoft. \emph{Common web application architectures}. \href{https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures}{Microsoft Learn, architecture guidance}.
+\item\label{ref:servicebased} Mark Richards and Neal Ford. \emph{Fundamentals of Software Architecture}, Chapter 13: Service-Based Architecture Style. O'Reilly Media, 2020. \href{https://www.oreilly.com/library/view/fundamentals-of-software/9781492043447/ch13.html}{Publisher's chapter preview}.
+\item\label{ref:microservices} Microsoft. \emph{Microservices architecture style}. \href{https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices}{Azure Architecture Center}.
+\item\label{ref:monolithfirst} Martin Fowler. \emph{Monolith First}. 3 June 2015. \href{https://martinfowler.com/bliki/MonolithFirst.html}{Author's article}.
+\item\label{ref:clean} Robert C. Martin. \emph{The Clean Architecture}. 13 August 2012. \href{https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html}{The Clean Code Blog}.
+\end{enumerate}

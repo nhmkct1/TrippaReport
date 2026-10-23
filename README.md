@@ -2,7 +2,9 @@
 
 [![Build report PDF](https://github.com/nhmkct1/TrippaReport/actions/workflows/build-report.yml/badge.svg)](https://github.com/nhmkct1/TrippaReport/actions/workflows/build-report.yml)
 
-English LaTeX report covering three chapters: Introduction, Existing System Analysis, and System Analysis. Content is based on the corresponding pages under **DACN Report** in Confluence. This report documents project requirements and intentions; it does not claim that the requirements have been implemented or measured.
+English LaTeX report covering three chapters: **Introduction**, **Functional and Non-Functional Requirements**, and **Architecture Design**. Introduction and all 173 FR/NFR identifiers are retained from **DACN Report** in Confluence. The architecture chapter is a new proposed design: four alternatives are compared, and a modular monolith with layered modules is selected. It includes a decision matrix, runtime/dependency diagrams, ownership rules, principal flows, trade-offs and references.
+
+The current revision is a **draft for review**, published with the user's approval. Cover fields that have not been supplied remain TBD. It describes intended requirements and proposed design decisions, not verified implementation or measured performance. Existing-system comparisons, stakeholders, business-rule exposition, prioritization and the old traceability section are excluded from this revision. Requirements that mention those subjects remain intact. Use Case Table, Use Case Diagram, Activity Diagram, Sequence Diagram and Class Diagram are retained as explicit TBD subsections under System Models, following the Confluence checklist.
 
 ## Build on Windows
 
@@ -43,12 +45,14 @@ GitHub may require sign-in to download artifacts. Artifacts are retained for 30 
 ## Edit the report
 
 - `report.tex`: document layout, typography, contents, and chapter inclusion.
-- `metadata.tex`: temporary title, institution, authors, supervisor, and date; replace when the official cover is supplied.
+- `frontmatter/cover.tex`: English cover adapted from the supplied HCMUT template, including its double frame.
+- `metadata.tex`: cover text and pending committee, supervisor, program, students/IDs and defense date.
 - `chapters/`: editable chapter sources. Chapter and section numbers are generated automatically.
-- `images/`, `diagrams/`: reserved for approved assets; no diagrams have been invented.
+- `diagrams/`: editable TikZ sources for the proposed runtime structure and module layers; compiled directly by LaTeX.
+- `images/hcmut.png`: university logo supplied by the user, included without altering the original image.
 - `refs/source-notes.md`: provenance, conversion decisions, and outstanding content questions.
 - `.github/workflows/build-report.yml`: automatic PDF build and artifact upload.
 
-Keep chapter content in the chapter files. Long tables repeat their column headers across page breaks. The five-column system comparison uses a landscape page. FR/NFR identifiers and unresolved TBD entries are retained from Confluence. The markers **[source TBD]** identify incomplete source references that require confirmation; they are not fabricated bibliography entries.
+Keep chapter content in the chapter files. Long tables repeat their column headers across page breaks. All 111 functional and 62 non-functional requirement identifiers and all 13 requirement TBD occurrences are retained from Confluence. Architecture references are listed inside Chapter 3, so the report has exactly three numbered chapters. No programming language, framework, cloud provider or separate AI service is imposed by the design.
 
 Generated PDFs and build files are ignored by Git. Commit the source files, then push to obtain a downloadable PDF artifact.

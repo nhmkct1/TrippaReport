@@ -1,0 +1,16 @@
+% Source dependency direction, not runtime call direction.
+\begin{tikzpicture}[
+  font=\small,
+  layer/.style={draw=linkblue,rounded corners=2pt,align=center,text width=5.1cm,minimum height=1.15cm,fill=blue!3},
+  dep/.style={-{Latex[length=2mm]},thick}
+]
+\node[layer] (api) at (-2.6,0) {Presentation / API\\HTTP contracts and boundary checks};
+\node[layer] (app) at (-2.6,-2.1) {Application\\Use cases, orchestration and ports};
+\node[layer] (domain) at (-2.6,-4.2) {Domain\\Trip rules and planning policies};
+\node[layer,text width=4.3cm] (infra) at (4,-2.1) {Infrastructure\\Persistence and provider adapters};
+\draw[dep] (api) -- (app);
+\draw[dep] (app) -- (domain);
+\draw[dep] (infra.west) -- (app.east);
+\draw[dep] (infra.south) |- (domain.east);
+\draw[dep,dashed] (api.east) -| node[pos=.72,right,align=left,font=\footnotesize]{Startup wiring\\only} (infra.north);
+\end{tikzpicture}
